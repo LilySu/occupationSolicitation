@@ -1,3 +1,5 @@
+from datetime import datetime
+import re
 import time
 
 from parsel import Selector
@@ -146,35 +148,64 @@ def main(chromedriverPath):
 
             SCROLL_PAUSE_TIME = 2.5
 
-            # Get scroll height
-            last_height = driver.execute_script("return document.body.scrollHeight")
+            # # Get scroll height
+            # last_height = driver.execute_script("return document.body.scrollHeight")
+            #
+            # while True:
+            #     # Scroll down to bottom
+            #     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            #
+            #     # Wait to load page
+            #     time.sleep(SCROLL_PAUSE_TIME)
+            #
+            #     # Calculate new scroll height and compare with last scroll height
+            #     new_height = driver.execute_script("return document.body.scrollHeight")
+            #     if new_height == last_height:
+            #         break
+            #     last_height = new_height
 
-            while True:
-                # Scroll down to bottom
-                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-                # Wait to load page
-                time.sleep(SCROLL_PAUSE_TIME)
-
-                # Calculate new scroll height and compare with last scroll height
-                new_height = driver.execute_script("return document.body.scrollHeight")
-                if new_height == last_height:
-                    break
-                last_height = new_height
-
-            time.sleep(7)  # Pause for 7 seconds.
+            time.sleep(1)  # Pause for 7 seconds.
             # Try to extract job links from the web page.
             try:
                 job_links = extract_job_links(driver)
                 print(len(job_links))
-                time.sleep(2000)  # Pause for 2 seconds.
+                time.sleep(2)  # Pause for 2 seconds.
                 if job_links:
-                    # If job links are found, apply to a job (in this case, the third job link).
-                    applied = apply_to_job(driver, job_links[3])
-                    if applied:
-                        print("Applied to a job successfully.")
+                    job_link = job_links[9]
+
+                    driver.get(job_link)
+                    job_description_all = driver.find_element(By.CLASS_NAME, "bg-beige-lighter")
+                    print(job_description_all.text)
+
+                    match = re.search(r'[^/]+$', job_link)
+
+                    if match:
+                        # Get today's date
+                        today = datetime.now()
+
+                        # Format the date as "YYYY-MM-DD"
+                        formatted_date = today.strftime("%Y-%m-%d")
+
+                        # Specify the file name with .txt extension
+                        file_name = "../yc_jobs/" + formatted_date + "--yc-job-" + match.group(0) + ".txt"
+                        print(file_name)
+                        # Open the file in write mode and save the text
+                        with open(file_name, "w", encoding="utf-8") as text_file:
+                            text_file.write(job_description_all.text)
+                            time.sleep(1)  # Pause for 2 seconds.
                     else:
-                        print("Already applied or something went wrong.")
+                        print("No match found.")
+
+
+
+
+
+                    # If job links are found, apply to a job (in this case, the third job link).
+                    # applied = apply_to_job(driver, job_links[3])
+                    # if applied:
+                    #     print("\n\n\nApplied to a job successfully.")
+                    # else:
+                    #     print("Already applied or something went wrong.")
                 else:
                     print("No job links found.")
             except Exception as e:
@@ -195,3 +226,4 @@ def main(chromedriverPath):
 if __name__ == "__main__":
     main(chromedriverPath)
     # print(chromedriverPath)
+

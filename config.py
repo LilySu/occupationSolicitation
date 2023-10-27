@@ -2,7 +2,7 @@ import os
 
 chromedriverPath = os.environ.get("CHROMEDRIVER_PATH")
 
-extractedPostingPath = "logs/text.txt"
+extractedPostingPath = "C:\\Users\\User\\git\\occupationalSolicitation\\yc_jobs\\2023-10-27--yc-job-61198.txt"
 
 pineconeKey = os.environ.get("PINECONE_API_KEY")
 
