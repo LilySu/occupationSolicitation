@@ -7,6 +7,9 @@ from langchain.vectorstores import Pinecone
 from langchain.chains import RetrievalQA
 import pinecone
 
+
+
+
 FILE_PATH = r'.\text.txt'
 
 pinecone.init(api_key=os.environ.get("PINECONE_KEY"), environment="gcp-starter")
