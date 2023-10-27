@@ -3,6 +3,7 @@ import time
 from parsel import Selector
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
@@ -107,8 +108,10 @@ def apply_to_job(driver, job_link):
         time.sleep(2)
         send_button = driver.find_element(By.XPATH, '//button[text()="Send"]')
         send_button.click()
+        return True
     except (WebDriverException, NoSuchElementException) as e:
         print(f"Failed to apply to the job: {str(e)}")
+        return False
 
 
 def main(chromedriverPath):
@@ -118,34 +121,77 @@ def main(chromedriverPath):
     Args:
         chromedriverPath (str): Path to the Chrome WebDriver executable.
     """
+    # Attempt to set up a web driver for Selenium using the specified chromedriverPath.
     try:
         driver = setup_driver(chromedriverPath)
-        time.sleep(5)
+        time.sleep(5)  # Pause for 5 seconds to ensure driver setup is complete.
+
+        # Try to log in using the established driver.
         try:
             login(driver)
             print("Logged in successfully.")
         except Exception as e:
             print(f"Failed to log in: {str(e)}")
-        time.sleep(2)
+
+        time.sleep(4)  # Pause for 4 seconds.
+
+        # Try to navigate to the filter page using the driver.
         try:
             navigate_to_filter_page(driver, filter_params)
             print("Navigated to the filter page successfully.")
+            time.sleep(1)  # Pause for 1 seconds.
+
+            # Scroll down to get all jobs
+            # driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+            SCROLL_PAUSE_TIME = 2.5
+
+            # Get scroll height
+            last_height = driver.execute_script("return document.body.scrollHeight")
+
+            while True:
+                # Scroll down to bottom
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+                # Wait to load page
+                time.sleep(SCROLL_PAUSE_TIME)
+
+                # Calculate new scroll height and compare with last scroll height
+                new_height = driver.execute_script("return document.body.scrollHeight")
+                if new_height == last_height:
+                    break
+                last_height = new_height
+
+            time.sleep(7)  # Pause for 7 seconds.
+            # Try to extract job links from the web page.
             try:
                 job_links = extract_job_links(driver)
+                print(len(job_links))
+                time.sleep(2000)  # Pause for 2 seconds.
                 if job_links:
-                    apply_to_job(driver, job_links[2])
-                    print("Applied to a job successfully.")
+                    # If job links are found, apply to a job (in this case, the third job link).
+                    applied = apply_to_job(driver, job_links[3])
+                    if applied:
+                        print("Applied to a job successfully.")
+                    else:
+                        print("Already applied or something went wrong.")
                 else:
                     print("No job links found.")
             except Exception as e:
                 print(f"Failed to extract job links: {str(e)}")
+
         except Exception as e:
             print(f"Failed to navigate to the filter page: {str(e)}")
+
+    # Handle exceptions by printing an error message.
     except Exception as e:
         print(f"An error occurred: {str(e)}")
+
+    # Ensure that the driver is properly closed or quit regardless of success or failure.
     finally:
         driver.quit()
 
 
 if __name__ == "__main__":
     main(chromedriverPath)
+    # print(chromedriverPath)
