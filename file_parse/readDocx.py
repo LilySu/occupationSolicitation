@@ -1,35 +1,28 @@
-import docx
+import docx2txt
+import os
+import glob
 
-# Load the existing .docx file
-doc = docx.Document("ResumeC.docx")
+# Specify the folder where your .docx files are located
+folder_path = "../my_resumes"
 
-# Create a new document
-new_doc = docx.Document()
+# List all .docx files in the folder
+docx_files = glob.glob(os.path.join(folder_path, "*.docx"))
 
-# Iterate through paragraphs and runs in the existing document
-for paragraph in doc.paragraphs:
-    new_paragraph = new_doc.add_paragraph()
-    for run in paragraph.runs:
-        # Extract text and formatting
-        text = run.text
-        formatting = {
-            "bold": run.bold,
-            "italic": run.italic,
-            "underline": run.underline,
-            # Add more formatting properties as needed
-        }
+# Find the most recent .docx file
+if docx_files:
+    most_recent_file = max(docx_files, key=os.path.getctime)
+    print(f"Processing the most recent file: {most_recent_file}")
 
-        # Process the text (add "A" to the end of each word)
-        words = text.split()
-        modified_words = [word + "A" for word in words]
-        modified_text = " ".join(modified_words)
+    # Replace 'output.txt' with the path where you want to save the .txt file
+    output_txt_path = 'output.txt'
 
-        # Create a new run in the new paragraph with the modified text and formatting
-        new_run = new_paragraph.add_run(modified_text)
-        new_run.bold = formatting["bold"]
-        new_run.italic = formatting["italic"]
-        new_run.underline = formatting["underline"]
-        # Add more formatting properties as needed
+    try:
+        # Extract text from the most recent .docx file and save it to a .txt file
+        text = docx2txt.process(most_recent_file, output_txt_path)
+        print(f'Text from "{most_recent_file}" has been saved to "{output_txt_path}".')
 
-# Save the new document
-new_doc.save("modified_document.docx")
+    except Exception as e:
+        print(f'An error occurred: {str(e)}')
+
+else:
+    print("No .docx files found in the specified folder.")
