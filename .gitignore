@@ -3,4 +3,4 @@ drivers/*
 logs/*
 yc_jobs/*
 my_resumes/*
-resume_vs_job/*
+config.py
