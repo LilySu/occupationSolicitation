@@ -4,6 +4,8 @@ chromedriverPath = os.environ.get("CHROMEDRIVER_PATH")
 
 extractedPostingPath = "C:\\Users\\User\\git\\occupationalSolicitation\\yc_jobs\\2023-10-27--yc-job-61198.txt"
 
+myResumePath = "C:\\Users\\User\\git\\occupationalSolicitation\\my_resumes\\2023-10-27_my_latest_resume.txt"
+
 pineconeKey = os.environ.get("PINECONE_API_KEY")
 
 openAIKey = os.environ.get("OPENAI_API_KEY")
