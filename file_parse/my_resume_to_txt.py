@@ -1,7 +1,8 @@
-import docx2txt
-import os
 import glob
+import os
 from datetime import datetime
+
+import docx2txt
 
 # Specify the folder where your .docx files are located
 folder_path = "../my_resumes"
@@ -21,7 +22,9 @@ if docx_files:
     formatted_date = today.strftime("%Y-%m-%d")
 
     # Specify the full path including the filename for the output .txt file
-    output_txt_path = os.path.normpath(os.path.join(folder_path, f"{formatted_date}_my_latest_resume.txt"))
+    output_txt_path = os.path.normpath(
+        os.path.join(folder_path, f"{formatted_date}_my_latest_resume.txt")
+    )
 
     try:
         # Extract text from the most recent .docx file and save it to the specified .txt file
@@ -32,10 +35,12 @@ if docx_files:
         with open(output_txt_path, "w", encoding="utf-8") as txt_file:
             txt_file.write(text)
 
-            print(f'Text from "{most_recent_file}" has been saved to "{output_txt_path}".')
+            print(
+                f'Text from "{most_recent_file}" has been saved to "{output_txt_path}".'
+            )
 
     except Exception as e:
-        print(f'An error occurred: {str(e)}')
+        print(f"An error occurred: {str(e)}")
 
 else:
     print("No .docx files found in the specified folder.")
