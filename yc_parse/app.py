@@ -1,10 +1,11 @@
-from datetime import datetime
 import re
 import time
+from datetime import datetime
 
 from parsel import Selector
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.common.exceptions import (NoSuchElementException,
+                                        WebDriverException)
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -174,10 +175,12 @@ def main(chromedriverPath):
                     job_link = job_links[9]
 
                     driver.get(job_link)
-                    job_description_all = driver.find_element(By.CLASS_NAME, "bg-beige-lighter")
+                    job_description_all = driver.find_element(
+                        By.CLASS_NAME, "bg-beige-lighter"
+                    )
                     print(job_description_all.text)
 
-                    match = re.search(r'[^/]+$', job_link)
+                    match = re.search(r"[^/]+$", job_link)
 
                     if match:
                         # Get today's date
@@ -187,7 +190,13 @@ def main(chromedriverPath):
                         formatted_date = today.strftime("%Y-%m-%d")
 
                         # Specify the file name with .txt extension
-                        file_name = "../yc_jobs/" + formatted_date + "--yc-job-" + match.group(0) + ".txt"
+                        file_name = (
+                            "../yc_jobs/"
+                            + formatted_date
+                            + "--yc-job-"
+                            + match.group(0)
+                            + ".txt"
+                        )
                         print(file_name)
                         # Open the file in write mode and save the text
                         with open(file_name, "w", encoding="utf-8") as text_file:
@@ -195,10 +204,6 @@ def main(chromedriverPath):
                             time.sleep(1)  # Pause for 2 seconds.
                     else:
                         print("No match found.")
-
-
-
-
 
                     # If job links are found, apply to a job (in this case, the third job link).
                     # applied = apply_to_job(driver, job_links[3])
@@ -226,4 +231,3 @@ def main(chromedriverPath):
 if __name__ == "__main__":
     main(chromedriverPath)
     # print(chromedriverPath)
-
