@@ -1,8 +1,9 @@
 import os
 
-chromedriverPath = os.environ.get("CHROMEDRIVER_PATH")
+model_name = "text-embedding-ada-002"
+index_name = "keyword"
 
-extractedPostingPath = "C:\\Users\\User\\git\\occupationalSolicitation\\yc_jobs\\2023-10-27--yc-job-61198.txt"
+extractedPostingPath = "C:\\Users\\User\\git\\occupationalSolicitation\\yc_jobs\\"
 
 myResumePath = "C:\\Users\\User\\git\\occupationalSolicitation\\my_resumes\\2023-10-27_my_latest_resume.txt"
 
@@ -22,8 +23,8 @@ industry = "any"
 interviewProcess = "any"
 jobType = "any"
 layout = "list-compact"
-locations = "IN" # For testing "US" for United States
-remote = "yes"
+locations = "US" # For testing "US" for United States
+remote = "any"
 role = "eng"
 role_type = "any" # or "ml" for machine learning
 sortBy = "created_desc"
@@ -36,3 +37,5 @@ filter_params = (
     f"layout={layout}&locations={locations}&remote={remote}&"
     f"role={role}&role_type={role_type}&sortBy={sortBy}&tab={tab}&usVisaNotRequired={usVisaNotRequired}"
 )
+
+chromedriverPath = os.environ.get("CHROMEDRIVER_PATH")

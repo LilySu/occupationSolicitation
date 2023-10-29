@@ -1,5 +1,6 @@
 import re
 import time
+import threading
 from datetime import datetime
 
 from parsel import Selector
@@ -11,6 +12,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
 from config import YC_password, YC_username, chromedriverPath, filter_params
+from runLangChain import run_langChain
 
 
 def setup_driver(chromedriverPath):
@@ -90,7 +92,7 @@ def extract_job_links(driver):
         return []
 
 
-def apply_to_job(driver, job_link):
+def apply_to_job(driver, job_link, custom_applicant_message):
     """
     Apply to a job by clicking the "Apply" button and filling in the text box.
 
@@ -105,17 +107,32 @@ def apply_to_job(driver, job_link):
         apply_job_button.click()
         time.sleep(1)
         input_text = driver.find_element(By.TAG_NAME, "textarea")
-        input_text.send_keys(
-            "I can Design and implement core data infra + pipelines. Help prototype and scale datasets for both model training and finetuning. Work closely with the rest of the team as we build and iterate on product."
-        )
+        # Send text to text book
+        input_text.send_keys(custom_applicant_message)
         time.sleep(2)
         send_button = driver.find_element(By.XPATH, '//button[text()="Send"]')
+        # Apply with the custom text
         send_button.click()
         return True
     except (WebDriverException, NoSuchElementException) as e:
         print(f"Failed to apply to the job: {str(e)}")
         return False
 
+
+def wait_and_insert_text(driver, job_link, custom_applicant_message):
+    start_time = time.time()
+
+    while not custom_applicant_message:
+        if time.time() - start_time > 20:  # Timeout after 20 seconds
+            return "Error: Timeout waiting for the variable to be instantiated"
+
+        time.sleep(1)  # Wait for 1 second before checking again
+
+    # Once the variable is instantiated, send the custom text to the message box
+    if apply_to_job(driver, job_link, custom_applicant_message):
+        return "Success"
+    else:
+        return "Error: No custom text from the job description and applicant resume using LangChain was generated."
 
 def main(chromedriverPath):
     """
@@ -144,41 +161,23 @@ def main(chromedriverPath):
             print("Navigated to the filter page successfully.")
             time.sleep(1)  # Pause for 1 seconds.
 
-            # Scroll down to get all jobs
-            # driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
             SCROLL_PAUSE_TIME = 2.5
-
-            # # Get scroll height
-            # last_height = driver.execute_script("return document.body.scrollHeight")
-            #
-            # while True:
-            #     # Scroll down to bottom
-            #     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            #
-            #     # Wait to load page
-            #     time.sleep(SCROLL_PAUSE_TIME)
-            #
-            #     # Calculate new scroll height and compare with last scroll height
-            #     new_height = driver.execute_script("return document.body.scrollHeight")
-            #     if new_height == last_height:
-            #         break
-            #     last_height = new_height
 
             time.sleep(1)  # Pause for 7 seconds.
             # Try to extract job links from the web page.
             try:
                 job_links = extract_job_links(driver)
-                print(len(job_links))
-                time.sleep(2)  # Pause for 2 seconds.
+                print(str(len(job_links)) + "job links found.")
+                time.sleep(4)  # Pause for 2 seconds.
                 if job_links:
-                    job_link = job_links[9]
+                    print(job_links[1])
+                    job_link = job_links[1]
 
                     driver.get(job_link)
                     job_description_all = driver.find_element(
                         By.CLASS_NAME, "bg-beige-lighter"
                     )
-                    print(job_description_all.text)
+                    # print(job_description_all.text)
 
                     match = re.search(r"[^/]+$", job_link)
 
@@ -190,27 +189,32 @@ def main(chromedriverPath):
                         formatted_date = today.strftime("%Y-%m-%d")
 
                         # Specify the file name with .txt extension
-                        file_name = (
+                        job_listing_txt_file = (
                             "../yc_jobs/"
                             + formatted_date
                             + "--yc-job-"
                             + match.group(0)
                             + ".txt"
                         )
-                        print(file_name)
+                        print(job_listing_txt_file)
                         # Open the file in write mode and save the text
-                        with open(file_name, "w", encoding="utf-8") as text_file:
+                        with open(job_listing_txt_file, "w", encoding="utf-8") as text_file:
                             text_file.write(job_description_all.text)
-                            time.sleep(1)  # Pause for 2 seconds.
+                            time.sleep(8)  # Pause for 8 seconds to wait for the text to write to a .txt file.
+                            print(f"job listing text is saved in the {job_listing_txt_file}")
+                            if job_listing_txt_file:
+                                # If job links are found, apply to a job (in this case, the third job link).
+                                custom_applicant_message = run_langChain()
+                                time.sleep(7)  # Pause for 7 seconds.
+                                app_status = wait_and_insert_text(driver, job_link, custom_applicant_message)
+                                if app_status == "Success":
+
+                                    print("\n\n\nApplied to a job successfully.")
+                                else:
+                                    print(app_status)
                     else:
                         print("No match found.")
 
-                    # If job links are found, apply to a job (in this case, the third job link).
-                    # applied = apply_to_job(driver, job_links[3])
-                    # if applied:
-                    #     print("\n\n\nApplied to a job successfully.")
-                    # else:
-                    #     print("Already applied or something went wrong.")
                 else:
                     print("No job links found.")
             except Exception as e:
@@ -226,6 +230,13 @@ def main(chromedriverPath):
     # Ensure that the driver is properly closed or quit regardless of success or failure.
     finally:
         driver.quit()
+
+
+def set_variable():
+    time.sleep(5)  # Simulate a delay
+    global my_variable
+    my_variable = "This is the instantiated value"
+
 
 
 if __name__ == "__main__":
